@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tesseract</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+<style type="text/css">
+    
+    body{
+        font-family: 'Roboto', sans-serif;
+    }
+    #tes{
+        background-color: #e6e6e64d;
+        color: #3c3c3c;
+        width: 80%;
+        margin: 0 auto;
+        margin-top: 30px;
+        font-size: 15px;
+        font-family: 'Roboto', sans-serif;
+        
+        
+    }
+    button{
+        background-color: #175488c4;
+        border: none;
+        color: white;
+        width: 100px;
+        height: 40px;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 100;
+        margin-left: 10px;
+    }
+    #info{
+        font-size: 12px;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 100;
+        color: green;
+        padding: 10px;
+        
+    }
+    .wrapper{
+        display: flex;
+        background-color: #7ea7b3b3;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+    </style>
+</head>
+<body>
+   <div class="wrapper">
+       <input type="file" id="files" name="files[]" multiple />
+<output id="list"></output>
+        <button type="button" id="img-to-txt">
+            Convert image to text
+        </button>
+        <button onclick="copyToClipboard('text_element')">
+    Copy text
+</button>
+       <span id="info"></span>
+       </div>
+        <div class="result">
+            <p id="text_element" class="tess">...</p>
+        </div>
+ 
+
+
+        <script src='https://cdn.rawgit.com/naptha/tesseract.js/1.0.10/dist/tesseract.js'></script>
+        <script>
+ 
+
+            // Check for the various File API support.
+if (window.File && window.FileReader && window.FileList && window.Blob) {
+  // Great success! All the File APIs are supported.
+} else {
+  alert('The File APIs are not fully supported in this browser.');
+}
+          function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+
+    // Loop through the FileList and render image files as thumbnails.
+    for (var i = 0, f; f = files[i]; i++) {
+
+      // Only process image files.
+      if (!f.type.match('image.*')) {
+        continue;
+      }
+
+      var reader = new FileReader();
+
+      // Closure to capture the file information.
+      reader.onload = (function(theFile) {
+        return function(e) {
+          // Render thumbnail.
+          var span = document.createElement('span');
+          span.innerHTML = ['<img class="thumb" src="', e.target.result,
+                            '" title="', escape(theFile.name), '"/>'].join('');
+           var photo = e.target.result;
+          document.getElementById('list').insertBefore(span, null);
+        };
+      })(f);
+
+      // Read in the image file as a data URL.
+      reader.readAsDataURL(f);
+   
+    }
+  }
+
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+          
+            // 2. Write some logic to initialize the text recognition
+            document.getElementById("img-to-txt").addEventListener("click", function(){
+                let btn = this;
+
+                // Disable button until the text recognition finishes
+                btn.disable = true;
+
+                // Configure recognition
+                let tesseractSettings = {
+                    lang: 'eng'
+                };
+
+                // Convert an image to text. This task works asynchronously, so you may show
+                // your user a loading dialog or something like that, or show the progress with Tesseract
+                Tesseract.recognize("text.jpg", tesseractSettings).then(function(result){
+                    // The result object of a text recognition contains detailed data about all the text
+                    // recognized in the image, words are grouped by arrays etc
+                    console.log(result);
+
+                    var skan = result.text;
+                     document.getElementsByClassName("tess")[0].innerHTML = skan;
+
+                   
+                    
+                }).finally(function(){
+                    // Enable button once the text recognition finishes (either if fails or not)
+                    btn.disable = false;
+                });
+                
+            }, false);
+
+        
+function copyToClipboard(elementId) {``
+
+  // Create an auxiliary hidden input
+  var aux = document.createElement("input");
+
+  // Get the text from the element passed into the input
+  aux.setAttribute("value", document.getElementById(elementId).innerHTML);
+
+  // Append the aux input to the body
+  document.body.appendChild(aux);
+
+  // Highlight the content
+  aux.select();
+
+  // Execute the copy command
+  document.execCommand("copy");
+
+  // Remove the input from the body
+  document.body.removeChild(aux);
+document.getElementById('info').innerHTML = "Text is copied";
+
+}
+
+function log(){
+	console.log('---')
+}
+                                  
+        </script>
+    </body>
+</html>
